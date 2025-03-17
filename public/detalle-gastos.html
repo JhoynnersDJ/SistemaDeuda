@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Gastos</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #f3f5f8; /* Un color similar al fondo de la página principal */
+        }
+    
+        .card {
+            background-color: #ffffff; /* Fondo blanco para la tarjeta */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+            border: 1px solid #ddd; /* Borde alrededor de la tarjeta */
+            border-radius: 8px; /* Bordes redondeados */
+            padding: 20px; /* Espaciado interno */
+        }
+
+        .table-container {
+            overflow-x: auto; /* Añadir barra de desplazamiento horizontal si es necesario */
+        }
+    
+        th, td {
+            text-align: center;
+        }
+    
+        .btn-primary {
+            background-color: #5cb85c; /* Color verde similar al de la página principal */
+            border-color: #5cb85c;
+        }
+    </style>
+</head>
+<body>
+
+<header class="bg-success text-white text-center py-3">
+    <h1>Beatriz la Quinta</h1>
+</header>
+
+<div class="container mt-4">
+    <h2 class="text-center">Detalle de Gastos</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Descripción</th>
+                    <th scope="col">Monto en Dólares</th>
+                    <th scope="col">Fecha de Gasto</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaGastosBody"></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                    <td id="totalGastos"></td>
+                    <td></td> <!-- Celda vacía para alinear la columna de acciones -->
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Realizar una solicitud AJAX para obtener el detalle de gastos
+        fetch('http://localhost:3000/detalle-gastos')
+            .then(response => response.json())
+            .then(data => {
+                // Construir la tabla con los datos recibidos
+                const tablaBody = document.getElementById('tablaGastosBody');
+                const totalGastosElement = document.getElementById('totalGastos');
+                data.gastos.forEach(gasto => {
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${gasto.tipo}</td>
+                        <td>${gasto.descripcion}</td>
+                        <td>$${gasto.MontoDolares}</td>
+                        <td>${gasto.fecha}</td>
+                        <td>
+                            <button class="btn btn-sucess btn-sm" onclick="mostrarFormularioEdicion('${gasto._id}')">
+                                <i class="fas fa-pencil-alt"></i> <!-- Ícono de lápiz -->
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarGasto('${gasto._id}')">
+                                <i class="fas fa-trash-alt"></i> <!-- Ícono de basura -->
+                            </button>
+                        </td>
+                    `;
+                    tablaBody.appendChild(fila);
+                });
+                // Mostrar el total
+                totalGastosElement.textContent = `$${data.totalGastos}`;
+            })
+            .catch(error => {
+                console.error('Error al obtener el detalle de gastos:', error);
+            });
+    
+        // Función para eliminar un gasto
+        function eliminarGasto(id) {
+            console.log('Eliminar gasto con id:', id);
+    
+            // Confirmar si el usuario desea eliminar el gasto
+            const confirmacion = confirm('¿Estás seguro de que deseas eliminar este gasto?');
+    
+            if (confirmacion) {
+                // Imprimir el ID en la consola para verificar
+                console.log('ID del gasto a eliminar:', id);
+    
+                // Realizar la solicitud DELETE para eliminar el gasto por su ID
+                fetch(`http://localhost:3000/api/gastos/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.mensaje);
+                    // Actualizar la página después de eliminar el gasto
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error al eliminar el gasto:', error);
+                });
+            }
+        }
+    
+        // Función para obtener y mostrar el formulario de edición
+        function mostrarFormularioEdicion(id) {
+            // Realizar una solicitud AJAX para obtener el gasto por su ID
+            fetch(`http://localhost:3000/api/gastos/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    const gasto = data.gasto;
+                    // Mostrar el formulario de edición con los datos del gasto
+                    Swal.fire({
+                        title: 'Editar Gasto',
+                        html: `
+                            <label for="tipoGasto">Tipo de Gasto:</label>
+                            <select class="form-control" id="tipoGasto" name="tipoGasto">
+                                <option value="casa" ${gasto.tipo === 'casa' ? 'selected' : ''}>Gasto en Casa</option>
+                                <option value="trabajo" ${gasto.tipo === 'trabajo' ? 'selected' : ''}>Gasto en Trabajo</option>
+                            </select>
+    
+                            <label for="descripcion">Descripción:</label>
+                            <input type="text" class="form-control" id="descripcion" name="descripcion" value="${gasto.descripcion}" required>
+    
+                            <label for="MontoDolares">Precio en Dólares:</label>
+                            <input type="number" class="form-control" id="MontoDolares" name="MontoDolares" step="0.01" value="${gasto.MontoDolares}" required>
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Guardar',
+                        cancelButtonText: 'Cancelar',
+                        preConfirm: () => {
+                            const tipoGasto = document.getElementById('tipoGasto').value;
+                            const descripcion = document.getElementById('descripcion').value;
+                            const precioDolares = document.getElementById('MontoDolares').value;
+    
+                            // Realizar una solicitud AJAX para editar el gasto
+                            return fetch(`http://localhost:3000/api/gastos/${id}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    tipoGasto,
+                                    descripcion,
+                                    MontoDolares: precioDolares,
+                                }),
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    
+                                    // Recargar la página después de editar el gasto
+                                    location.reload();
+                                })
+                                .catch(error => {
+                                    console.error('Error al editar el gasto:', error);
+                                    alert('Error al editar el gasto');
+                                });
+                        },
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al obtener el gasto:', error);
+                    alert('Error al obtener el gasto');
+                });
+        }
+    </script>
+    
+</body>
+</html>

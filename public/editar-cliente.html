@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Cliente</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>Editar Cliente</h2>
+        <form id="editarClienteForm">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="apellido">Apellido:</label>
+                <input type="text" class="form-control" id="apellido" name="apellido" required>
+            </div>
+            <div class="form-group">
+                <label for="cedula">Cédula:</label>
+                <input type="text" class="form-control" id="cedula" name="cedula">
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clienteId = urlParams.get('id');
+
+            // Obtener datos del cliente
+            fetch(`/api/clientes/${clienteId}`)
+                .then(response => response.json())
+                .then(cliente => {
+                    $('#nombre').val(cliente.nombre);
+                    $('#apellido').val(cliente.apellido);
+                    $('#cedula').val(cliente.cedula);
+                });
+
+            // Actualizar datos del cliente
+            $('#editarClienteForm').on('submit', function(event) {
+                event.preventDefault();
+                const nombre = $('#nombre').val();
+                const apellido = $('#apellido').val();
+                const cedula = $('#cedula').val();
+
+                fetch(`/api/clientes/${clienteId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nombre, apellido, cedula })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Cliente actualizado exitosamente');
+                        window.location.href = '/historial-cliente.html?id=' + clienteId; // Redirigir al historial
+                    } else {
+                        alert('Error al actualizar el cliente');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

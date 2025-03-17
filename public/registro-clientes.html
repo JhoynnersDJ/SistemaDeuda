@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Clientes</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    <style>
+        header {
+            background: linear-gradient(to right, #800020, #000000);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+    
+        .btn-custom {
+            background-color: #660018;
+            color: white;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transform: scale(1);
+        }
+    
+        .btn-custom:hover {
+            background-color: #420211;
+            color: #e0e0e0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transform: scale(1.05);
+        }
+    
+        .card-shadow {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+            border-radius: 12px; /* Bordes más redondeados */
+            margin-bottom: 30px; /* Más margen */
+            padding: 20px; /* Agregado padding interno */
+        }
+    
+        .form-control {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 10px; /* Agregado margen inferior */
+        }
+    
+        .form-control:focus {
+            border-color: #800020;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 6px rgba(128, 0, 32, 0.5);
+        }
+    
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Beatriz la Quinta</h1>
+    </header>
+
+    <div class="container mt-4">
+        <div class="card card-shadow">
+            <div class="card-body">
+                <h2 class="card-title text-center">Registro de Clientes</h2>
+                <form id="formularioClientes" autocomplete ="off">
+                    <div class="form-group">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="apellido">Apellido:</label>
+                        <input type="text" class="form-control" id="apellido" name="apellido" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cedula">Cedula:</label>
+                        <input type="text" class="form-control" id="cedula" name="cedula" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefono">Teléfono:</label>
+                        <input type="tel" class="form-control" id="telefono" name="telefono">
+                    </div>
+                    <div class="form-group">
+                        <label for="direccion">Dirección:</label>
+                        <input type="text" class="form-control" id="direccion" name="direccion">
+                    </div>
+                    <button type="button" class="btn btn-custom btn-block" onclick="registrarCliente()">Registrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function registrarCliente() {
+            const nombre = document.getElementById('nombre').value;
+            const apellido = document.getElementById('apellido').value;
+            const cedula = document.getElementById('cedula').value;
+            const telefono = document.getElementById('telefono').value;
+            const direccion = document.getElementById('direccion').value;
+
+            const datos = {
+                nombre: nombre,
+                apellido: apellido,
+                cedula: cedula,
+                telefono: telefono,
+                direccion: direccion
+            };
+
+            fetch('/clientes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Éxito',
+                        text: 'Cliente registrado exitosamente'
+                }).then(() => {
+                    window.location.href = '/index.html';
+                });
+                    document.getElementById('formularioClientes').reset();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al registrar el cliente'
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Respuesta del servidor:', data);
+            })
+            .catch(error => {
+                console.error('Error en la solicitud:', error);
+            });
+        }
+    </script>
+</body>
+</html>

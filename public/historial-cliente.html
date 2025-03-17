@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial del Cliente</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+    
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    
+        h2, h3, h4 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    
+        h2 {
+            font-size: 2em;
+            color: #660018;
+        }
+    
+        h4 {
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+    
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+    
+        .btn {
+            margin-right: 10px;
+            margin-bottom: 10px;
+            font-size: 1em;
+            padding: 10px 20px;
+        }
+    
+        .modal-content {
+            border-radius: 8px;
+        }
+    
+        .modal-header {
+            background-color: #660018;
+            color: white;
+            border-bottom: none;
+        }
+    
+        .modal-footer {
+            border-top: none;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 id="nombreCliente" class="text-center"></h2>
+        <h4 id="montoTotalDeudas" class="text-center"></h4>
+
+        <h3 class="mt-4">Historial de Transacciones</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Descripción</th>
+                    <th>Monto</th>
+                    <th>Fecha y Hora</th>
+                    <th>Tipo</th>
+                    <th>Método de Pago/Deuda Anterior</th>
+                </tr>
+            </thead>
+            <tbody id="listaTransacciones">
+            </tbody>
+        </table>
+
+        <button type="button" class="btn btn-success mt-3" data-toggle="modal" data-target="#modalPago">Pagar</button>
+        <a href="/" class="btn btn-secondary mt-3">Volver</a>
+    </div>
+
+    <div class="modal fade" id="modalPago" tabindex="-1" role="dialog" aria-labelledby="modalPagoLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPagoLabel">Registrar Pago</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="pagoForm">
+                        <div class="form-group">
+                            <label for="montoPagado">Monto Pagado:</label>
+                            <input type="number" class="form-control" id="montoPagado" name="montoPagado" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="metodoPago">Método de Pago:</label>
+                            <select class="form-control" id="metodoPago" name="metodoPago">
+                                <option value="efectivo">Efectivo</option>
+                                <option value="pago_movil">Pago Móvil</option>
+                                <option value="tarjeta">Tarjeta</option>
+                            </select>
+                        </div>
+                        <div id="bancoSelect" style="display: none;">
+                            <div class="form-group">
+                                <label for="banco">Banco:</label>
+                                <select class="form-control" id="banco" name="banco">
+                                    <option value="banco_venezuela">Banco de Venezuela</option>
+                                    <option value="banesco">Banesco</option>
+                                    <option value="mercantil">Mercantil</option>
+                                    <option value="provincial">Provincial</option>
+                                    <option value="otros">Otros</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="confirmarPago">Seguro</button>
+                </div>
+            </div>
+        </div>
+    </div>    
+
+    
+    <div class="container mt-4">
+        <h2 id="nombreCliente" class="text-center"></h2>
+        <h4 id="montoTotalDeudas" class="text-center"></h4>
+    
+        <button type="button" class="btn btn-primary mt-3" data-toggle="modal" data-target="#modalEditarCliente">Editar Cliente</button>
+
+    
+        <div class="modal fade" id="modalEditarCliente" tabindex="-1" role="dialog" aria-labelledby="modalEditarClienteLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEditarClienteLabel">Editar Cliente</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editarClienteForm">
+                            <div class="form-group">
+                                <label for="nombre">Nombre:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control editable-field" id="editarNombre" name="nombre" required disabled>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary edit-button" data-field="editarNombre">Editar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="apellido">Apellido:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control editable-field" id="editarApellido" name="apellido" required disabled>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary edit-button" data-field="editarApellido">Editar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cedula">Cédula:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control editable-field" id="editarCedula" name="cedula" disabled>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary edit-button" data-field="editarCedula">Editar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="telefono">Teléfono:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control editable-field" id="editarTelefono" name="telefono" disabled>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary edit-button" data-field="editarTelefono">Editar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="direccion">Dirección:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control editable-field" id="editarDireccion" name="direccion" disabled>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-secondary edit-button" data-field="editarDireccion">Editar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" form="editarClienteForm" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clienteId = urlParams.get('id');
+        
+            fetch(`/api/cliente-historial/${clienteId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('nombreCliente').textContent = `Historial de ${data.cliente.nombre} ${data.cliente.apellido}`;
+                    document.getElementById('montoTotalDeudas').textContent = `Monto Total de Deudas: $${data.cliente.montoTotalDeudas}`;
+        
+                    // Mostrar transacciones en la tabla
+                    const listaTransacciones = document.getElementById('listaTransacciones');
+                    listaTransacciones.innerHTML = ''; // Limpiar la tabla
+        
+                    // Combinar deudas y pagos en un solo array
+                    const transacciones = [...data.deudas.map(deuda => ({ ...deuda, tipo: 'deuda' })), ...data.pagos.map(pago => ({ ...pago, tipo: 'pago' }))];
+        
+                    // Ordenar transacciones por fecha (descendente)
+                    transacciones.sort((a, b) => new Date(b.fechaEmision || b.fechaPago) - new Date(a.fechaEmision || a.fechaPago));
+        
+                    transacciones.forEach(transaccion => {
+                        const row = listaTransacciones.insertRow();
+                        const cell1 = row.insertCell(0);
+                        const cell2 = row.insertCell(1);
+                        const cell3 = row.insertCell(2);
+                        const cell4 = row.insertCell(3);
+                        const cell5 = row.insertCell(4);
+        
+                        cell1.textContent = transaccion.descripcion || 'Pago';
+                        cell2.textContent = `$${transaccion.monto || transaccion.montoPagado}`;
+                        cell3.textContent = new Date(transaccion.fechaEmision || transaccion.fechaPago).toLocaleString();
+                        cell4.textContent = transaccion.tipo === 'deuda' ? 'Deuda' : 'Pago';
+        
+                        // Mostrar método de pago o deuda anterior
+                        if (transaccion.tipo === 'deuda') {
+                            cell5.textContent = ''; // Dejar vacío para deudas
+                        } else {
+                            if (transaccion.metodoPago === 'pago_movil') {
+                                cell5.textContent = `Pago móvil de ${transaccion.banco}`; // Muestra el nombre del banco
+                            } else {
+                                cell5.textContent = transaccion.metodoPago; // Muestra el método de pago normal
+                            }
+                        }
+        
+                        // Aplicar estilos de color
+                        if (transaccion.tipo === 'deuda') {
+                            row.style.color = 'red';
+                        } else {
+                            row.style.color = 'green';
+                        }
+                    });
+                });
+        
+            $('#metodoPago').on('change', function() {
+                if ($(this).val() === 'pago_movil') {
+                    $('#bancoSelect').show();
+                } else {
+                    $('#bancoSelect').hide();
+                }
+            });
+        
+            $('#pagoForm').on('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevenir el envío del formulario con Enter
+                }
+            });
+        
+            $('#confirmarPago').on('click', function() {
+                const montoPagado = $('#montoPagado').val();
+                const metodoPago = $('#metodoPago').val();
+                let banco = null;
+        
+                if (metodoPago === 'pago_movil') {
+                    banco = $('#banco').val();
+                }
+        
+                // Enviar los datos al backend
+                fetch('/pagos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cliente: clienteId,
+                        montoPagado: montoPagado,
+                        metodoPago: metodoPago,
+                        banco: banco // Incluir el banco si es Pago Móvil
+                    })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Éxito',
+                            text: 'Pago registrado exitosamente'
+                        }).then(() => {
+                            // Redirigir a index.html en lugar de recargar la página
+                            window.location.href = '/index.html';
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al registrar el pago'
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Respuesta del servidor:', data);
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud:', error);
+                });
+            });
+        
+            // Abrir modal de edición de cliente
+// Abrir modal de edición de cliente
+$('#modalEditarCliente').on('shown.bs.modal', function() {// Cambiar a 'shown.bs.modal'
+    console.log('Abriendo modal de edición de cliente'); 
+fetch(`/api/clientes/${clienteId}`)
+    .then(response => response.json())
+    .then(cliente => {
+        $('#editarNombre').val(cliente.nombre);
+        $('#editarApellido').val(cliente.apellido);
+        $('#editarCedula').val(cliente.cedula);
+        $('#editarTelefono').val(cliente.telefono);
+        $('#editarDireccion').val(cliente.direccion);
+    });
+});
+        
+            // Habilitar campos al hacer clic en "Editar"
+            $(document).on('click', '.edit-button', function() {
+                const fieldId = $(this).data('field');
+                $('#' + fieldId).prop('disabled', false).focus();
+            });
+        
+            // Actualizar cliente
+            $('#editarClienteForm').on('submit', function(event) {
+                event.preventDefault();
+                const nombre = $('#editarNombre').val();
+                const apellido = $('#editarApellido').val();
+                const cedula = $('#editarCedula').val();
+                const telefono = $('#editarTelefono').val();
+                const direccion = $('#editarDireccion').val();
+        
+                fetch(`/api/clientes/${clienteId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nombre, apellido, cedula, telefono, direccion })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Cliente actualizado exitosamente');
+                        $('#modalEditarCliente').modal('hide'); // Cerrar modal
+                        location.reload(); // Recargar página para mostrar cambios
+                    } else {
+                        alert('Error al actualizar el cliente');
+                    }
+                });
+            });
+        });    
+    </script>
+    </body>
+</html>
