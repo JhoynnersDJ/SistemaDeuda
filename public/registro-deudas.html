@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Deudas</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    <style>
+        header {
+            background: linear-gradient(to right, #800020, #000000);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+    
+        .btn-custom {
+            background-color: #660018;
+            color: white;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transform: scale(1);
+        }
+    
+        .btn-custom:hover {
+            background-color: #420211;
+            color: #e0e0e0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transform: scale(1.05);
+        }
+    
+        .card-shadow {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+            border-radius: 12px; /* Bordes más redondeados */
+            margin-bottom: 30px; /* Más margen */
+            padding: 20px; /* Agregado padding interno */
+        }
+    
+        .form-control {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 10px; /* Agregado margen inferior */
+        }
+    
+        .form-control:focus {
+            border-color: #800020;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 6px rgba(128, 0, 32, 0.5);
+        }
+    
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Beatriz la Quinta</h1>
+    </header>
+
+    <div class="container mt-4">
+        <div class="card card-shadow">
+            <div class="card-body">
+                <h2 class="card-title text-center">Registro de Deudas</h2>
+                <form id="formularioDeudas" autocomplete ="off">
+                    <div class="form-group">
+                        <label for="nombreCliente">Nombre del Cliente:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="nombreCliente" name="nombreCliente" oninput="buscarClientes()" required>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-secondary" id="limpiarCliente" style="display: none;" onclick="limpiarSeleccionCliente()">Limpiar</button>
+                            </div>
+                        </div>
+                        <ul id="listaClientes" class="list-group mt-2"></ul>
+                        <input type="hidden" id="idClienteSeleccionado" name="idClienteSeleccionado">
+                    </div>
+                    <div class="form-group">
+                        <label for="descripcion">Descripción:</label>
+                        <input type="text" class="form-control" id="descripcion" name="descripcion" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="monto">Monto:</label>
+                        <input type="number" class="form-control" id="monto" name="monto" required>
+                    </div>
+                    <button type="button" class="btn btn-custom btn-block" onclick="registrarDeuda()">Registrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function buscarClientes() {
+            const nombreCliente = document.getElementById('nombreCliente').value;
+            const listaClientes = document.getElementById('listaClientes');
+            listaClientes.innerHTML = '';
+
+            if (nombreCliente.length < 1) {
+                return;
+            }
+
+            fetch(`/api/clientes?nombre=${nombreCliente}`)
+                .then(response => response.json())
+                .then(clientes => {
+                    clientes.forEach(cliente => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.textContent = `${cliente.nombre} ${cliente.apellido}/ V-${cliente.cedula}`;
+                        li.onclick = () => seleccionarCliente(cliente._id, `${cliente.nombre} ${cliente.apellido}`);
+                        listaClientes.appendChild(li);
+                    });
+                });
+        }
+
+        function seleccionarCliente(idCliente, nombreCompleto) {
+            document.getElementById('idClienteSeleccionado').value = idCliente;
+            document.getElementById('nombreCliente').value = nombreCompleto;
+            document.getElementById('nombreCliente').disabled = true; // Deshabilitar el input
+            document.getElementById('listaClientes').innerHTML = '';
+            document.getElementById('limpiarCliente').style.display = 'block'; // Mostrar el botón de limpiar
+        }
+
+        function limpiarSeleccionCliente() {
+            document.getElementById('idClienteSeleccionado').value = '';
+            document.getElementById('nombreCliente').value = '';
+            document.getElementById('nombreCliente').disabled = false; // Habilitar el input
+            document.getElementById('limpiarCliente').style.display = 'none'; // Ocultar el botón de limpiar
+            document.getElementById('nombreCliente').focus(); // Enfocar el input
+        }
+        function registrarDeuda() {
+            const cliente = document.getElementById('idClienteSeleccionado').value;
+            const descripcion = document.getElementById('descripcion').value;
+            const monto = document.getElementById('monto').value;
+
+            const datos = {
+                cliente: cliente,
+                descripcion: descripcion,
+                monto: monto,
+            };
+
+            fetch('/deudas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Éxito',
+                        text: 'Deuda registrada exitosamente'
+                    }).then(() => {
+                        window.location.href = '/index.html';
+                    });
+                    document.getElementById('formularioDeudas').reset();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al registrar la deuda'
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Respuesta del servidor:', data);
+            })
+            .catch(error => {
+                console.error('Error en la solicitud:', error);
+            });
+        }
+    </script>
+</body>
+</html>

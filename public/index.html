@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beatriz la Quinta - Deudas</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        header {
+            background: linear-gradient(to right, #800020, #000000);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .table-custom {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .table-custom th, .table-custom td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .table-custom th {
+            background-color: #343a40;
+            color: white;
+        }
+
+        .btn-custom {
+            background-color: #800020;
+            color: white;
+        }
+
+        .btn-custom:hover {
+            background-color: #660018;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombreado sutil */
+            border-radius: 8px; /* Bordes redondeados */
+            margin-bottom: 20px; /* Espacio entre los cards */
+        }
+
+        #totalDeudasGlobal {
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .mi-boton { /* Reemplaza .mi-boton con la clase de tus botones */
+            background-color: #660018; /* Color de fondo inicial */
+            color: white; /* Color de texto inicial */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Transición suave */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Sombra inicial */
+            transition: box-shadow 0.3s ease; /* Transición suave */
+            transform: scale(1); /* Escala inicial */
+            transition: transform 0.3s ease; /* Transición suave */
+        }
+        
+        .mi-boton:hover {
+            background-color: #420211; /* Color de fondo al pasar el cursor */
+            color: #e0e0e0; /* Color de texto al pasar el cursor */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra al pasar el cursor */
+            transform: scale(1.05); /* Escala al pasar el cursor */
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Beatriz la Quinta</h1>
+    </header>
+    <div class="container mt-4">
+        <div id="totalDeudasGlobal">Cargando total de deudas...</div>
+
+        </div>
+    <div class="container mt-4">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <a href="/registro-clientes" class="btn btn-custom btn-block mi-boton">Agregar Cliente</a>
+            </div>
+            <div class="col-md-6">
+                <a href="/registro-deudas" class="btn btn-custom btn-block mi-boton">Registrar Deuda</a>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="card card-shadow"> <div class="card-body">
+                        <h2 class="card-title text-center">Buscar Cliente (Para editar cliente o pagar)</h2>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="buscarCliente" placeholder="Nombre del cliente" autocomplete ="off" oninput="buscarCliente()">
+                            <ul id="listaClientesBuscados" class="list-group mt-2"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="card card-shadow"> <div class="card-body">
+                        <h2 class="card-title text-center">Clientes Registrados</h2>
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientesRegistrados">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card card-shadow"> <div class="card-body">
+                        <h2 class="card-title text-center">Últimas 3 Deudas</h2>
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Descripción</th>
+                                    <th>Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ultimasDeudas">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-shadow"> <div class="card-body">
+                        <h2 class="card-title text-center">Clientes y Deudas</h2>
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Deudas</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientesDeudas">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script>
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                window.location.reload(); // Recargar la página si se cargó desde la caché
+            }
+        };
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarUltimasDeudas();
+            cargarClientesDeudas();
+            cargarClientesRegistrados();
+        });
+
+            function cargarClientesDeudas() {
+                fetch('/api/clientes-deudas')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Respuesta del backend:', data); // Agregar console.log()
+                        const clientes = data.clientes;
+                        const totalDeudas = data.totalDeudas;
+                        console.log('Clientes:', clientes); // Agregar console.log()
+                        console.log('Total de deudas:', totalDeudas); // Agregar console.log()
+                        const listaClientes = document.getElementById('clientesDeudas');
+                        listaClientes.innerHTML = '';
+                        
+                    clientes.forEach(cliente => {
+                    const row = listaClientes.insertRow();
+                    const cell1 = row.insertCell(0);
+                    const cell2 = row.insertCell(1);
+                    const cell3 = row.insertCell(2);
+                    cell1.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                    let deudasText = cliente.deudas.map(deuda => `${deuda.descripcion} - $${deuda.monto}`).join(', ');
+                    cell2.textContent = deudasText || 'Sin deudas';
+                    cell3.textContent = `$${cliente.montoTotalDeudas}`;
+                });
+
+                // Mostrar el total de deudas
+                const totalDeudasElement = document.getElementById('totalDeudas');
+                if (!totalDeudasElement) {
+                    const div = document.createElement('div');
+                    div.id = 'totalDeudas';
+                    div.textContent = `Total de Deudas: $${totalDeudas}`;
+                    document.querySelector('.container').appendChild(div);
+                } else {
+                    totalDeudasElement.textContent = `Total de Deudas: $${totalDeudas}`;
+                }
+
+            });
+}
+
+        function buscarCliente() {
+            const nombreCliente = document.getElementById('buscarCliente').value;
+            const listaClientes = document.getElementById('listaClientesBuscados');
+            listaClientes.innerHTML = '';
+
+            if (nombreCliente.length < 1) {
+                return;
+            }
+
+            fetch(`/api/clientes?nombre=${nombreCliente}`)
+                .then(response => response.json())
+                .then(clientes => {
+                    clientes.forEach(cliente => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                        li.onclick = () => window.location.href = `/historial-cliente.html?id=${cliente._id}`;
+                        listaClientes.appendChild(li);
+                    });
+                });
+        }
+
+        function cargarClientesRegistrados() {
+            fetch('/api/clientes')
+                .then(response => response.json())
+                .then(clientes => {
+                    const listaClientes = document.getElementById('clientesRegistrados');
+                    listaClientes.innerHTML = ''; // Limpiar la tabla
+                    clientes.forEach(cliente => {
+                        const row = listaClientes.insertRow();
+                        const cell1 = row.insertCell(0);
+                        cell1.textContent = `${cliente.nombre} ${cliente.apellido}`; // Concatenar nombre y apellido
+                    });
+                });
+        }
+
+        function cargarUltimasDeudas() {
+            fetch('/api/ultimas-deudas')
+                .then(response => response.json())
+                .then(deudas => {
+                    const listaDeudas = document.getElementById('ultimasDeudas');
+                    listaDeudas.innerHTML = ''; // Limpiar la lista
+                    deudas.forEach(deuda => {
+                        const row = listaDeudas.insertRow();
+                        const cell1 = row.insertCell(0);
+                        const cell2 = row.insertCell(1);
+                        const cell3 = row.insertCell(2);
+                        cell1.textContent = `${deuda.cliente.nombre} ${deuda.cliente.apellido}`;
+                        cell2.textContent = deuda.descripcion;
+                        cell3.textContent = `$${deuda.monto}`;
+                    });
+                });
+        }
+
+        function cargarClientesDeudas() {
+            fetch('/api/clientes-deudas')
+                .then(response => response.json())
+                .then(clientes => { // La respuesta ahora es un array de clientes
+                    console.log('Clientes:', clientes);
+        
+                    let totalDeudas = 0;
+                    clientes.forEach(cliente => {
+                        totalDeudas += cliente.montoTotalDeudas;
+                    });
+        
+                    console.log('Total de deudas:', totalDeudas);
+        
+                    // Mostrar el total de deudas global
+                    const totalDeudasGlobalElement = document.getElementById('totalDeudasGlobal');
+                    totalDeudasGlobalElement.textContent = `Total de Deudas: $${totalDeudas}`;
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud:', error);
+                });
+        }        
+    </script>
+</body>
+</html>
