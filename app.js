@@ -317,7 +317,7 @@ app.get('/api/cliente-historial/:id', async (req, res) => {
 // Ruta para registrar un nuevo pago
 app.post('/pagos', async (req, res) => {
   try {
-      const { cliente, montoPagado, metodoPago, banco } = req.body;
+      const { cliente, montoPagado, metodoPago, banco, referencia } = req.body;
 
       // Obtener el monto total de deuda del cliente antes del pago
       const clienteAnterior = await Cliente.findById(cliente);
@@ -329,7 +329,8 @@ app.post('/pagos', async (req, res) => {
           montoPagado: montoPagado,
           metodoPago: metodoPago,
           montoTotalDeudaAnterior: montoTotalDeudaAnterior, // Almacenar el monto anterior
-          banco:banco
+          banco:banco,
+          referencia:referencia
       });
 
       // Guardar el pago
